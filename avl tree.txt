@@ -1,0 +1,190 @@
+public class AVL_Tree {
+
+    //--------------get max of two integers------------------------------------
+    public int max_t (int a,int b){
+        return (a > b) ? a : b;
+    }
+    //------------function to get height of the tree-----------------------------
+    public int depth (Node_AVL n){
+        if (n == null){
+             return 0;
+        }
+        return n.getDepth();
+    }
+    //---------------allocate a new node with key passed---------------------------------
+    public Node_AVL newNode (int key){
+        Node_AVL node = new Node_AVL(key ,1);// new node added as leaf
+        node.left = null;
+        node.rigtht = null;
+        return node;
+    }
+    //----------------right rotate the subtree rooted with y-------------------------------
+    public Node_AVL rigthRotate (Node_AVL y){
+        Node_AVL x = y.left;
+        Node_AVL t = x.rigtht;
+        x.rigtht = y;
+        y.left = t;
+        // Update heights
+        y.setDepth(max_t(depth(y.left),depth(y.rigtht) + 1));
+        x.setDepth(max_t(depth(x.left),depth(x.rigtht) + 1));
+        return x;
+    }
+    //-------------------left rotate the subtree rooted with x----------------------------
+    public Node_AVL leftRotate (Node_AVL x){
+        Node_AVL y = x.rigtht;
+        Node_AVL t = y.left;
+        y.left = x;
+        x.rigtht = t;
+        x.setDepth(max_t(depth(x.left),depth(x.rigtht) + 1));
+        y.setDepth(max_t(depth(y.left),depth(y.rigtht) + 1));
+        return y;
+    }
+    // Get Balance factor of node n
+    public  int getBalance (Node_AVL n){
+        if (n == null){
+            return 0;
+        }
+        return depth(n.left) - depth(n.rigtht);
+    }
+    //--------------insertion operation for node in AVL tree-----------------------------
+    public Node_AVL insert (Node_AVL root ,int key){
+        if (root == null){
+            return (new Node_AVL(key));
+        }
+        if (key < root.getKey()){
+            root.left = insert(root.left , key);
+        }
+        else if (key > root.getKey()){
+            root.rigtht = insert(root.rigtht ,key);
+        }
+        else {
+            return root;
+        }
+        //update height of ancestor node
+        root.setDepth(1 + max_t(depth(root.left),depth(root.rigtht)));
+
+        int balance = getBalance(root);
+        // rotate if unbalanced
+
+        // left left case
+        if (balance > 1 && key < root.left.getKey()){
+            return rigthRotate(root);
+        }
+        //rigth rigth case
+        if (balance < -1 && key > root.rigtht.getKey()){
+            return leftRotate(root);
+        }
+        // left rigth case
+        if (balance > 1 && key > root.left.getKey()){
+            root.left = leftRotate(root.left);
+            return rigthRotate(root);
+        }
+        // rigth left case
+        if (balance < -1 && key < root.rigtht.getKey()){
+            root.rigtht = rigthRotate(root.rigtht);
+            return leftRotate(root);
+        }
+        return root;
+    }
+    // find the node with minimum valure
+    public Node_AVL minValueNode (Node_AVL root){
+        Node_AVL curr = root;
+        while (curr.left != null){
+            curr = curr.left;
+        }
+        return curr;
+    }
+    // find the node with maximum node
+    public Node_AVL maxValueNode (Node_AVL root){
+        Node_AVL curr = root;
+        while (curr.rigtht != null){
+            curr = curr.rigtht;
+        }
+        return curr;
+    }
+    //----------delete a node from AVL tree with the given key------------------------
+    public Node_AVL deleteNode (Node_AVL root ,int key){
+        if (root == null){
+            return root;
+        }
+        if (key < root.getKey()){
+            root.left = deleteNode(root.left,key);
+        }
+        else if (key > root.getKey()){
+            root.rigtht = deleteNode(root.rigtht ,key);
+        }
+        else {
+            if (root.left == null || root.rigtht == null){
+                Node_AVL temp = root.left != null ? root.left : root.rigtht;
+                if (temp == null){
+                    temp = root;
+                    root = null;
+                }
+                else {
+                    root = temp;
+                }
+            }
+            else {
+                Node_AVL temp = minValueNode(root.rigtht);
+                root.setKey(temp.getKey());
+                root.rigtht = deleteNode(root.rigtht, temp.getKey());
+            }
+        }
+        if (root == null){
+            return null;
+        }
+        // update depth
+        root.setDepth(1 + max_t(depth(root.left),depth(root.rigtht)));
+        // get balance factor
+        int balance = getBalance(root);
+        //rotate the tree if unbalanced
+
+        // Left Left Case
+        if (balance > 1 && getBalance(root.left) >= 0){
+            return rigthRotate(root);
+        }
+        // rigth rigth case
+        if (balance < -1 && getBalance(root.rigtht) <= 0){
+            return leftRotate(root);
+        }
+        // left rigth case
+        if (balance > 1 && getBalance(root.left) < 0){
+            root.left = leftRotate(root.left);
+            return rigthRotate(root);
+        }
+        // rigth left case
+        if (balance < -1 && getBalance(root.rigtht) > 0){
+            root.rigtht = rigthRotate(root.rigtht);
+            return leftRotate(root);
+        }
+        return root;
+    }
+    //--------------------------traversals using BST------------------------=
+
+    // -------------- print all element use inorder BST---------------------- .
+    public void in_Order(Node_AVL root){
+        if (root != null){
+            in_Order(root.left);
+            System.out.println(root.getKey() + " ");
+            in_Order(root.rigtht);
+        }
+    }
+    // -------------- print all element use preorder BST---------------------- .
+
+    public void pre_Order (Node_AVL root){
+        if (root != null){
+            System.out.println(root.getKey() + " ");
+            pre_Order(root.left);
+            pre_Order(root.rigtht);
+        }
+    }
+    // -------------- print all element use postorder BST---------------------- .
+
+    public void post_Order (Node_AVL root){
+        if (root != null){
+            post_Order(root.left);
+            post_Order(root.rigtht);
+            System.out.println(root.getKey() + " ");
+        }
+    }
+}
